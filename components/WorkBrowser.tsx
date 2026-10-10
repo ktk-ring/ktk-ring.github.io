@@ -9,6 +9,11 @@ type Filter = CategoryId | 'all';
 
 const labelOf = Object.fromEntries(categories.map((c) => [c.id, c.label])) as Record<CategoryId, string>;
 
+function youtubeThumbnail(href?: string) {
+  const id = href?.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=)([\w-]{11})/)?.[1];
+  return id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : undefined;
+}
+
 export default function WorkBrowser() {
   const [filter, setFilter] = useState<Filter>('all');
 
@@ -40,7 +45,7 @@ export default function WorkBrowser() {
 
       <p className={styles.legend}>
         <span className={styles.legendMark} aria-hidden="true">↗</span>
-        표시가 있는 작업은 클릭하면 작업 페이지로 이동합니다.
+        표시가 있는 작업은 클릭하면 작업을 볼 수 있습니다.
       </p>
 
       <div className={styles.filters} role="group" aria-label="작업 분류">
@@ -63,8 +68,20 @@ export default function WorkBrowser() {
           <h3 className={styles.yearTitle}>{year}</h3>
           <ul className={styles.grid}>
             {items.map((w) => {
+              const thumbnail = youtubeThumbnail(w.href);
               const body = (
                 <>
+                  {thumbnail && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      className={styles.thumb}
+                      src={thumbnail}
+                      alt=""
+                      loading="lazy"
+                      width={480}
+                      height={270}
+                    />
+                  )}
                   <span className={styles.title}>{w.title}</span>
                   {w.href && (
                     <span className={styles.arrow} aria-hidden="true">↗</span>
@@ -78,15 +95,26 @@ export default function WorkBrowser() {
                       {w.personal && <span className={styles.personal}>Personal</span>}
                     </span>
                   )}
-                  {w.href && <span className={styles.cta}>작업 페이지 보기 →</span>}
+                  {w.href && <span className={styles.cta}>작업 보기 →</span>}
                 </>
               );
               return (
                 <li key={`${year}-${w.title}`}>
                   {w.href ? (
-                    <Link href={w.href} className={`${styles.card} ${styles.link}`}>
-                      {body}
-                    </Link>
+                    /^https?:\/\//.test(w.href) ? (
+                      <a
+                        href={w.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`${styles.card} ${styles.link}`}
+                      >
+                        {body}
+                      </a>
+                    ) : (
+                      <Link href={w.href} className={`${styles.card} ${styles.link}`}>
+                        {body}
+                      </Link>
+                    )
                   ) : (
                     <div className={styles.card}>{body}</div>
                   )}
