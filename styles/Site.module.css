@@ -11,7 +11,7 @@
 .inner {
   max-width: var(--maxw);
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 var(--gutter-r) 0 var(--gutter);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -44,8 +44,8 @@
 }
 
 .nav a {
+  border-radius: var(--radius);
   padding: 8px 16px;
-  border-radius: 999px;
   background: var(--glass);
   box-shadow: var(--glass-edge);
   transition: color 0.25s, background-color 0.25s;
