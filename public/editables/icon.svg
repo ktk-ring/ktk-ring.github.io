@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Editables">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#23262e"/>
+      <stop offset="1" stop-color="#14161b"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- cube faces -->
+  <polygon points="256,116 378,186 256,256 134,186" fill="#7c8cff" fill-opacity=".38"/>
+  <polygon points="378,186 378,326 256,396 256,256" fill="#7c8cff" fill-opacity=".16"/>
+  <polygon points="134,186 256,256 256,396 134,326" fill="#7c8cff" fill-opacity=".26"/>
+  <!-- edges -->
+  <g fill="none" stroke="#b9c1ff" stroke-width="10" stroke-linejoin="round" stroke-linecap="round">
+    <polygon points="256,116 378,186 378,326 256,396 134,326 134,186"/>
+    <polyline points="134,186 256,256 378,186"/>
+    <line x1="256" y1="256" x2="256" y2="396"/>
+  </g>
+  <!-- editable points -->
+  <g fill="#14161b" stroke="#b9c1ff" stroke-width="8">
+    <rect x="238" y="98" width="36" height="36" rx="6"/>
+    <rect x="360" y="168" width="36" height="36" rx="6"/>
+    <rect x="360" y="308" width="36" height="36" rx="6"/>
+    <rect x="238" y="378" width="36" height="36" rx="6"/>
+    <rect x="116" y="308" width="36" height="36" rx="6"/>
+    <rect x="116" y="168" width="36" height="36" rx="6"/>
+  </g>
+  <!-- selected point -->
+  <rect x="234" y="234" width="44" height="44" rx="8" fill="#ffb347" stroke="#14161b" stroke-width="8"/>
+</svg>
