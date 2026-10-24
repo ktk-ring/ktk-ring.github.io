@@ -163,6 +163,12 @@
   background: var(--glass-hover);
 }
 
+/* 지금 보고 있는 섹션 */
+.page .toc a.tocActive {
+  color: var(--fg);
+  background: var(--glass-active);
+}
+
 /* ---------------------------------------------------------------- 모듈 */
 
 .module {
@@ -314,9 +320,25 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  /* 휴대폰에서는 목차가 두 줄이 되어 화면을 가리므로 위에 붙이지 않음 */
+  /* 휴대폰: 한 줄로 두고 옆으로 넘김 (두 줄이면 위에 붙었을 때 화면을 너무 가림) */
   .toc {
-    position: static;
+    top: 76px;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    width: auto;
+    max-width: 100%;
+    margin: 0 0 24px;
+    overflow-x: auto;
+    scrollbar-width: none;
     font-size: 14px;
+  }
+
+  .toc::-webkit-scrollbar {
+    display: none;
+  }
+
+  .page .toc a {
+    flex: none;
+    white-space: nowrap;
   }
 }

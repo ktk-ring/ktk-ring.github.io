@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import EditablesDownload from '../../components/EditablesDownload';
+import EditablesToc from '../../components/EditablesToc';
 import styles from '../../styles/Editables.module.css';
 
 const TITLE = 'Editables | make editable';
@@ -146,14 +147,7 @@ export default function EditablesPage() {
         </figure>
       </section>
 
-      <nav className={styles.toc} aria-label="기능">
-        {MODULES.map((m) => (
-          <a key={m.id} href={`#${m.id}`}>
-            {m.title}
-          </a>
-        ))}
-        <a href="#install">설치</a>
-      </nav>
+      <EditablesToc items={[...MODULES.map((m) => ({ id: m.id, title: m.title })), { id: 'install', title: '설치' }]} />
 
       {MODULES.map((m) => (
         <section key={m.id} id={m.id} className={styles.module}>
