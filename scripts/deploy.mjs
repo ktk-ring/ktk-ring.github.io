@@ -1,7 +1,8 @@
 // gh-pages 배포 스크립트 (Windows/macOS/Linux 공통)
 //
 //   npm run deploy            빌드 후 gh-pages 브랜치에 푸시
-//   npm run deploy -- --dry   빌드와 커밋 준비까지만 하고 푸시는 하지 않음
+//   npm run deploy:dry        빌드와 커밋 준비까지만 하고 푸시는 하지 않음
+//   (npm run deploy -- --dry 는 npm이 --dry-run으로 가로채 실제 배포되므로 쓰지 말 것)
 //
 // main 브랜치를 건드리지 않도록 임시 worktree에서 out/ 내용만 gh-pages에 올린다.
 // 기존 CNAME(커스텀 도메인)은 유지하고 .nojekyll을 만든다.
