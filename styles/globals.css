@@ -25,7 +25,7 @@
   box-sizing: border-box;
 }
 
-/* 100vw 폭의 대표작 영역이 세로 스크롤바 폭만큼 가로 스크롤을 만들지 않도록 */
+/* 화면 폭보다 넓은 요소가 생겨도 가로 스크롤이 생기지 않도록 */
 html,
 body {
   overflow-x: clip;
@@ -101,9 +101,9 @@ img {
   padding: 0 var(--gutter-r) 96px var(--gutter);
 }
 
-/* 넓은 화면에서는 우측 목차 바 자리를 오른쪽에만 확보 (화면 바깥 여백이 있으면 그만큼 덜 차지) */
+/* 포트폴리오 페이지의 넓은 화면에서는 우측 목차 바 자리를 오른쪽에만 확보 (화면 바깥 여백이 있으면 그만큼 덜 차지) */
 @media (min-width: 1100px) {
-  :root {
+  :root:has(.has-toc) {
     --gutter-r: max(24px, calc(112px - max(0px, (100vw - 1440px) / 2)));
   }
 }
@@ -114,6 +114,15 @@ img {
 
 .hero {
   padding: 96px 0 56px;
+}
+
+.hero .eyebrow {
+  margin-bottom: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 .hero h1 {

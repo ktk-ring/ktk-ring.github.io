@@ -1,0 +1,402 @@
+/* ───────── 홈: 대단원 입구 ───────── */
+
+.hero {
+  padding-bottom: 48px;
+}
+
+.doors {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-bottom: 96px;
+}
+
+.door {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 32px;
+  border-radius: var(--radius);
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-edge), var(--glass-drop);
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.door:has(.doorLink:hover),
+.door:has(.doorLink:focus-visible) {
+  background: var(--glass-hover);
+  transform: translateY(-3px);
+}
+
+.doorIndex {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.doorIndex span {
+  margin-right: 10px;
+  color: var(--fg);
+}
+
+.doorTitle {
+  font-size: clamp(30px, 3.4vw, 44px);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+/* 제목 링크가 입구 전체를 덮어서 어디를 눌러도 들어간다. 안쪽 칩 · 목록은 위로 올려 따로 누를 수 있게 한다 */
+.doorLink::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+}
+
+.doorLink:focus-visible {
+  outline: none;
+}
+
+.door:has(.doorLink:focus-visible) {
+  outline: 2px solid var(--fg);
+  outline-offset: 3px;
+}
+
+.doorMeta {
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.previews {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.previews img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.doorChips {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.doorChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.07);
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.doorChip span {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.doorChip:hover {
+  color: var(--fg);
+  background: var(--glass-active);
+}
+
+.doorServices {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+}
+
+.doorService {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 4px;
+  box-shadow: inset 0 1px 0 var(--hairline);
+  transition: background-color 0.2s;
+}
+
+.doorServices li:last-child .doorService {
+  box-shadow: inset 0 1px 0 var(--hairline), inset 0 -1px 0 var(--hairline);
+}
+
+.doorService:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.doorServiceIcon {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  font-size: 17px;
+  font-weight: 700;
+  background: var(--glass-active);
+  box-shadow: var(--glass-edge);
+}
+
+.doorServiceText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.doorServiceName {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.doorServiceSummary {
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.doorServiceArrow {
+  margin-left: auto;
+  padding-left: 8px;
+  color: var(--muted);
+  transition: transform 0.2s, color 0.2s;
+}
+
+.doorService:hover .doorServiceArrow {
+  color: var(--fg);
+  transform: translateX(3px);
+}
+
+.doorCta {
+  margin-top: auto;
+  padding-top: 10px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* ───────── 앱 및 서비스 페이지 ───────── */
+
+.group {
+  padding: 48px 0;
+  box-shadow: inset 0 1px 0 var(--hairline);
+}
+
+.groupHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 20px;
+  margin-bottom: 28px;
+}
+
+.groupHead h2 {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.groupHead p {
+  font-size: 15px;
+  color: var(--muted);
+}
+
+.groupMore {
+  margin-left: auto;
+  font-size: 15px;
+  color: var(--muted);
+  transition: color 0.2s;
+}
+
+.groupMore:hover {
+  color: var(--fg);
+}
+
+.serviceGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+.serviceCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  height: 100%;
+  padding: 28px;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-edge), var(--glass-drop);
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.serviceCard:hover,
+.serviceCard:focus-visible {
+  background: var(--glass-hover);
+  transform: translateY(-3px);
+}
+
+.serviceImage {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.serviceBody {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px 18px;
+  align-items: start;
+}
+
+.serviceIcon {
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  font-size: 22px;
+  font-weight: 700;
+  background: var(--glass-active);
+  box-shadow: var(--glass-edge);
+}
+
+.serviceText {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.serviceName {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.serviceSummary {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--muted);
+  word-break: keep-all;
+}
+
+.servicePlatform {
+  justify-self: start;
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  line-height: 1;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.serviceCta {
+  margin-top: auto;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* 이미지가 있는 카드: 넓은 화면에서는 이미지 왼쪽, 설명 오른쪽 */
+.wide .serviceCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  grid-template-rows: 1fr auto;
+  gap: 0 36px;
+  padding: 0;
+}
+
+.wide .serviceImage {
+  grid-row: 1 / span 2;
+  height: 100%;
+}
+
+.wide .serviceBody {
+  align-self: center;
+  padding: 32px 32px 0 0;
+}
+
+.wide .serviceCta {
+  padding: 18px 32px 32px 0;
+}
+
+@media (max-width: 900px) {
+  .doors {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .doors {
+    margin-bottom: 64px;
+  }
+
+  .door {
+    padding: 24px 20px;
+  }
+
+  .serviceGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .serviceCard {
+    padding: 22px 20px;
+  }
+
+  .wide .serviceCard {
+    display: flex;
+    padding: 0 0 22px;
+  }
+
+  .wide .serviceImage {
+    height: auto;
+  }
+
+  .wide .serviceBody,
+  .wide .serviceCta {
+    padding: 0 20px;
+  }
+
+  .groupMore {
+    margin-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .door:has(.doorLink:hover),
+  .serviceCard:hover {
+    transform: none;
+  }
+}

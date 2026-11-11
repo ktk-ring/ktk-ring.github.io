@@ -85,11 +85,11 @@ export const works: Work[] = [
     role: '밈 생성기 사이트 개발',
     href: '/jiji-stop',
   },
-  { title: 'p5.js 작업 아카이브', year: 2022, tags: [], href: '/p5js-archives' },
+  { title: 'p5.js 작업 아카이브', year: 2022, tags: ['programming'], href: '/p5js-archives' },
   {
     title: '2022 디지털아트 프로그래밍 기말작업',
     year: 2022,
-    tags: [],
+    tags: ['programming'],
     href: '/dap-final',
   },
 
@@ -154,7 +154,7 @@ export const works: Work[] = [
     year: 2025,
     tags: ['3d'],
   },
-  { title: '인디게임 ‘All that Glow’', year: 2025, tags: ['programming'] },
+  { title: '인디게임 ‘All that Glow’', year: 2025, tags: ['programming'], href: '/studiogoldleaf/' },
 
   // 2026
   {
@@ -171,4 +171,5 @@ export const works: Work[] = [
     href: 'https://youtu.be/jK8eWyysF_o',
   },
   { title: '2026 종이접기 페스티벌 아쿠아리움 미디어파사드', year: 2026, tags: ['2d'] },
+  { title: '워드샐러드 생성기', year: 2026, tags: ['programming'], href: '/wordsalad/' },
 ];

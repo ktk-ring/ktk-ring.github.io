@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
 import { categories, works, type CategoryId, type Work } from '../data/works';
 import styles from '../styles/WorkBrowser.module.css';
 
@@ -26,20 +25,21 @@ function youtubeThumbnail(href?: string) {
   return id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : undefined;
 }
 
-/** href 종류에 따라 새 탭 링크 / 사이트 내 링크 / 일반 박스로 감싼다 */
+/**
+ * href 종류에 따라 새 탭 링크 / 같은 탭 링크 / 일반 박스로 감싼다.
+ * /jiji-stop 같은 경로는 같은 도메인의 별도 저장소 사이트라 next/link가 아닌 일반 링크로 연다.
+ */
 function Wrapper({ work: w, className, children }: { work: Work; className: string; children: React.ReactNode }) {
   if (!w.href) return <div className={className}>{children}</div>;
-  if (/^https?:\/\//.test(w.href)) {
-    return (
-      <a href={w.href} target="_blank" rel="noopener noreferrer" className={className}>
-        {children}
-      </a>
-    );
-  }
+  const external = /^https?:\/\//.test(w.href);
   return (
-    <Link href={w.href} className={className}>
+    <a
+      href={w.href}
+      className={className}
+      {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+    >
       {children}
-    </Link>
+    </a>
   );
 }
 
@@ -242,7 +242,7 @@ export default function WorkBrowser() {
 
         <p className={`${styles.legend} reveal`} style={step(5)}>
           <span className={styles.legendMark} aria-hidden="true">↗</span>
-          표시가 있는 작업은 클릭하면 작업을 볼 수 있습니다.
+          표시가 있는 작업은 눌러서 볼 수 있어요.
         </p>
 
         <div className={`${styles.filters} reveal`} style={step(6)} role="group" aria-label="작업 분류">

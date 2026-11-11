@@ -10,12 +10,12 @@ const DESCRIPTION =
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
-  alternates: { canonical: '/editables' },
+  alternates: { canonical: '/editables/' },
   openGraph: {
     title: TITLE,
     description: DESCRIPTION,
-    url: '/editables',
-    siteName: '김태균 Portfolio',
+    url: '/editables/',
+    siteName: '김태균 · KTK RING',
     locale: 'ko_KR',
     type: 'website',
     images: [{ url: '/editables/og.png', width: 1200, height: 630, alt: 'Editables · make editable 작업공간' }],
@@ -30,7 +30,7 @@ const MODULES: Module[] = [
   {
     id: 'media',
     title: '미디어',
-    lead: '영상과 이미지를 확인하고 원하는 형식으로 바꿉니다. 파일 목록 하나로 미리보기 · 인코딩 · 비교를 오가며 씁니다.',
+    lead: '영상과 이미지를 확인하고 원하는 형식으로 바꿉니다. 같은 파일 목록을 두고 미리보기, 인코딩, 비교 화면을 오갈 수 있습니다.',
     points: [
       '프레임 단위 미리보기 · 구간 지정 · 지금 화면 PNG · 구간 GIF와 영상',
       'MP4 · MOV · MKV · WebM · GIF 일괄 변환 · 프리셋 · 오디오와 자막 트랙 선택',
@@ -52,7 +52,7 @@ const MODULES: Module[] = [
   {
     id: 'renamer',
     title: '리네이머',
-    lead: '여러 파일의 이름을 규칙대로 한 번에 바꿉니다. 바뀔 이름을 미리 보고 적용하며, 적용한 뒤에도 되돌릴 수 있습니다.',
+    lead: '여러 파일의 이름을 규칙대로 한 번에 바꿉니다. 바뀔 이름을 먼저 보고 적용하고, 적용한 뒤에도 되돌릴 수 있습니다.',
     points: [
       '찾아 바꾸기 · 앞뒤에 붙이기 · 번호 · 대소문자 · 공백과 특수문자 정리',
       'UE5 네이밍: 파일 종류에 맞는 T_ · SM_ · A_ 접두사와 텍스처 접미사',
@@ -69,7 +69,7 @@ const MODULES: Module[] = [
   {
     id: 'vcs',
     title: '형상관리 (SVN)',
-    lead: '팀 저장소의 파일을 받고, 올리고, 잠급니다. Windows는 svn이 함께 설치되어 따로 준비할 것이 없습니다.',
+    lead: '팀 저장소에서 파일을 받고 올리고 잠급니다. Windows에서는 svn이 같이 설치되니 따로 준비할 건 없습니다.',
     points: [
       '바뀐 파일 확인 · 커밋 · 업데이트 · 잠금 · 되돌리기 · 충돌 해결 · 바뀐 내용 보기',
       '저장소 전체 잠금 현황 · 오래된 잠금 정리',
@@ -138,7 +138,7 @@ export default function EditablesPage() {
             <b>make editable</b> 작업공간
           </p>
           <p className={styles.lead}>
-            영상 · 이미지 변환, 파일 이름 일괄 변경, SVN 형상관리, 텍스처 맵 만들기, 3D 모델 확인을 한 앱에서 할 수 있습니다.
+            작업하다 보면 자주 하게 되는 영상 · 이미지 변환, 파일 이름 일괄 변경, SVN, 텍스처 맵 만들기, 3D 모델 확인을 한 앱에 모았습니다.
           </p>
           <EditablesDownload />
         </div>

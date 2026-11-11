@@ -56,6 +56,32 @@
   background: var(--glass-hover);
 }
 
+.nav a[aria-current='page'] {
+  color: var(--fg);
+  font-weight: 600;
+  background: var(--glass-active);
+}
+
+.footerSite {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footerLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+}
+
+.footerLinks a {
+  transition: color 0.2s;
+}
+
+.footerLinks a:hover {
+  color: var(--fg);
+}
+
 .footer {
   margin-top: 24px;
   color: var(--muted);
@@ -72,6 +98,16 @@
 @media (max-width: 720px) {
   .brand span {
     display: none;
+  }
+
+  .header .nav {
+    flex-wrap: nowrap;
+    gap: 6px;
+    font-size: 14px;
+  }
+
+  .header .nav a {
+    padding: 7px 11px;
   }
 
   .footer .inner {
