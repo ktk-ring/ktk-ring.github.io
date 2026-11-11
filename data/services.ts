@@ -7,8 +7,10 @@ export interface Service {
   platform: string;
   /** 아이콘 이미지 경로. 없으면 이름 첫 글자를 쓴다 */
   icon?: string;
-  /** 앱 및 서비스 페이지에서 크게 보여 줄 이미지 */
+  /** 앱과 서비스 페이지 카드에 보여 줄 화면 (16:10) */
   image?: string;
+  /** 카드를 한 줄 전체 폭으로 (이미지 왼쪽 · 설명 오른쪽) */
+  wide?: boolean;
   /** 사이트 안에 있는 소개 페이지면 true (새 탭으로 열지 않음) */
   internal?: boolean;
 }
@@ -36,6 +38,7 @@ export const serviceGroups: ServiceGroup[] = [
         platform: 'Windows · macOS',
         icon: '/editables/icon.svg',
         image: '/editables/banner.webp',
+        wide: true,
         internal: true,
       },
       {
@@ -43,6 +46,8 @@ export const serviceGroups: ServiceGroup[] = [
         summary: '직통보다 빨리 도착하는 환승 조합 찾기',
         href: 'https://app.ktkring.com/train/',
         platform: '웹',
+        image: '/apps/train.webp',
+        wide: true,
       },
     ],
   },
@@ -56,12 +61,14 @@ export const serviceGroups: ServiceGroup[] = [
         summary: '검색어를 넣으면 2000~2010년대 포털을 뒤덮던 스팸 글을 다시 만들어 주는 사이트',
         href: '/wordsalad/',
         platform: '웹',
+        image: '/apps/wordsalad.webp',
       },
       {
         name: '‘지지를 철회한다’ 생성기',
-        summary: '그때 그 밈 이미지를 자동으로 만들어 주는 생성기',
+        summary: '이름을 넣으면 ‘지지를 철회한다’ 밈 문구를 만들어 주는 생성기',
         href: '/jiji-stop/',
         platform: '웹',
+        image: '/apps/jiji-stop.webp',
       },
     ],
   },

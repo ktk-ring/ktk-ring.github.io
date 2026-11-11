@@ -41,7 +41,7 @@ export default function Apps() {
 
           <ul className={styles.serviceGrid}>
             {group.items.map((s) => (
-              <li key={s.name} className={s.image ? styles.wide : undefined}>
+              <li key={s.name} className={s.wide ? styles.wide : undefined}>
                 <ServiceLink service={s} className={styles.serviceCard}>
                   {s.image && (
                     // eslint-disable-next-line @next/next/no-img-element
