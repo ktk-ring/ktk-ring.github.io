@@ -51,7 +51,7 @@ export default function Home() {
         <h1 className="reveal" style={step(0)}>김태균</h1>
         <p className="role reveal" style={step(1)}>3D · VFX · 테크니컬 아티스트</p>
         <p className="subtitle reveal" style={step(2)}>
-          작업 포트폴리오 · Last Update 2026.10
+          작업 포트폴리오
         </p>
 
         <dl className="tools reveal" style={step(3)}>

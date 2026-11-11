@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { categories, works, type CategoryId, type Work } from '../data/works';
 import styles from '../styles/WorkBrowser.module.css';
@@ -8,8 +8,10 @@ import styles from '../styles/WorkBrowser.module.css';
 type Filter = CategoryId | 'all';
 
 const labelOf = Object.fromEntries(categories.map((c) => [c.id, c.label])) as Record<CategoryId, string>;
+const categoryIds = categories.map((c) => c.id) as string[];
 
 const ANIMATION_MS = 350;
+const FILTER_PARAM = 'category';
 
 const step = (i: number) => ({ '--i': i }) as React.CSSProperties;
 
@@ -24,8 +26,77 @@ function youtubeThumbnail(href?: string) {
   return id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : undefined;
 }
 
+/** href 종류에 따라 새 탭 링크 / 사이트 내 링크 / 일반 박스로 감싼다 */
+function Wrapper({ work: w, className, children }: { work: Work; className: string; children: React.ReactNode }) {
+  if (!w.href) return <div className={className}>{children}</div>;
+  if (/^https?:\/\//.test(w.href)) {
+    return (
+      <a href={w.href} target="_blank" rel="noopener noreferrer" className={className}>
+        {children}
+      </a>
+    );
+  }
+  return (
+    <Link href={w.href} className={className}>
+      {children}
+    </Link>
+  );
+}
+
+function WorkCard({ work: w }: { work: Work }) {
+  const thumbnail = youtubeThumbnail(w.href);
+  const className = [styles.card, w.href ? styles.link : ''].filter(Boolean).join(' ');
+
+  const body = (
+    <>
+      {thumbnail && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img className={styles.thumb} src={thumbnail} alt="" loading="lazy" width={480} height={270} />
+      )}
+      <span className={styles.title}>{w.title}</span>
+      {w.href && (
+        <span className={styles.arrow} aria-hidden="true">↗</span>
+      )}
+      {w.role && <span className={styles.role}>{w.role}</span>}
+      {(w.tags.length > 0 || w.personal) && (
+        <span className={styles.meta}>
+          {w.tags.map((t) => (
+            <span key={t} className={styles.tag}>{labelOf[t]}</span>
+          ))}
+          {w.personal && <span className={styles.personal}>Personal</span>}
+        </span>
+      )}
+      {w.href && <span className={styles.cta}>작업 보기 →</span>}
+    </>
+  );
+
+  return (
+    <Wrapper work={w} className={className}>
+      {body}
+    </Wrapper>
+  );
+}
+
 export default function WorkBrowser() {
   const [filter, setFilter] = useState<Filter>('all');
+  const urlFilterRef = useRef<string | null>(null);
+
+  // 주소의 ?category= 값을 필터에 반영 (정적 배포라 마운트 후에 읽는다)
+  useEffect(() => {
+    const value = new URLSearchParams(window.location.search).get(FILTER_PARAM);
+    if (value && categoryIds.includes(value)) {
+      urlFilterRef.current = value;
+      setFilter(value as CategoryId);
+    }
+  }, []);
+
+  const selectFilter = (id: Filter) => {
+    setFilter(id);
+    const url = new URL(window.location.href);
+    if (id === 'all') url.searchParams.delete(FILTER_PARAM);
+    else url.searchParams.set(FILTER_PARAM, id);
+    window.history.replaceState(null, '', url);
+  };
 
   const counts = useMemo(() => {
     const result: Record<string, number> = { all: works.length };
@@ -56,6 +127,13 @@ export default function WorkBrowser() {
   );
 
   useEffect(() => {
+    // 주소에서 읽어 온 필터를 처음 적용할 때는 애니메이션 없이 바로 교체
+    if (urlFilterRef.current && urlFilterRef.current === filter) {
+      urlFilterRef.current = null;
+      setRendered(groups.map(([year, items]) => ({ year, items, status: 'idle' as const })));
+      return;
+    }
+
     const target = new Map<number, Work[]>(groups);
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -82,7 +160,7 @@ export default function WorkBrowser() {
       setRendered((prev) => prev.filter((r) => r.status !== 'leaving'));
     }, ANIMATION_MS + 40);
     return () => window.clearTimeout(timer);
-  }, [groups]);
+  }, [groups, filter]);
 
   const tocItems = useMemo(
     () => [
@@ -110,6 +188,8 @@ export default function WorkBrowser() {
     status === 'entering' ? styles.entering : status === 'leaving' ? styles.leaving : '';
 
   const [activeId, setActiveId] = useState<string>('');
+  const [mobileTocVisible, setMobileTocVisible] = useState(false);
+  const mobileTocRef = useRef<HTMLElement>(null);
 
   // 첫 로딩 등장 효과가 끝난 뒤에는 연도 섹션에서 reveal 클래스를 제거
   const [introDone, setIntroDone] = useState(false);
@@ -133,6 +213,10 @@ export default function WorkBrowser() {
       const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
       if (atBottom && window.scrollY > 0 && tocItems.length > 0) current = tocItems[tocItems.length - 1].id;
       setActiveId(current);
+
+      // 모바일 연도 바는 작업 목록 영역에 들어온 뒤부터 표시
+      const works = document.getElementById('works');
+      setMobileTocVisible(!!works && works.getBoundingClientRect().top <= 140);
     };
     update();
     window.addEventListener('scroll', update, { passive: true });
@@ -143,130 +227,110 @@ export default function WorkBrowser() {
     };
   }, [tocItems]);
 
+  // 모바일 바에서 활성 항목이 가려지지 않도록 가로 스크롤 위치를 맞춘다
+  useEffect(() => {
+    const bar = mobileTocRef.current;
+    const chip = bar?.querySelector<HTMLElement>('[aria-current="location"]');
+    if (!bar || !chip) return;
+    bar.scrollTo({ left: chip.offsetLeft - bar.clientWidth / 2 + chip.clientWidth / 2, behavior: 'smooth' });
+  }, [activeId]);
+
   return (
-    <section id="works" aria-labelledby="works-title">
-      <h2 id="works-title" className={styles.srOnly}>작업물</h2>
+    <>
+      <section id="works" aria-labelledby="works-title">
+        <h2 id="works-title" className={styles.srOnly}>작업물</h2>
 
-      <p className={`${styles.legend} reveal`} style={step(4)}>
-        <span className={styles.legendMark} aria-hidden="true">↗</span>
-        표시가 있는 작업은 클릭하면 작업을 볼 수 있습니다.
-      </p>
+        <p className={`${styles.legend} reveal`} style={step(5)}>
+          <span className={styles.legendMark} aria-hidden="true">↗</span>
+          표시가 있는 작업은 클릭하면 작업을 볼 수 있습니다.
+        </p>
 
-      <div className={`${styles.filters} reveal`} style={step(5)} role="group" aria-label="작업 분류">
-        {options.map((o) => (
-          <button
-            key={o.id}
-            type="button"
-            className={styles.chip}
-            aria-pressed={filter === o.id}
-            onClick={() => setFilter(o.id)}
+        <div className={`${styles.filters} reveal`} style={step(6)} role="group" aria-label="작업 분류">
+          {options.map((o) => (
+            <button
+              key={o.id}
+              type="button"
+              className={styles.chip}
+              aria-pressed={filter === o.id}
+              onClick={() => selectFilter(o.id)}
+            >
+              {o.label}
+              <span className={styles.count}>{counts[o.id]}</span>
+            </button>
+          ))}
+        </div>
+
+        {rendered.map(({ year, items, status }, index) => (
+          <div
+            key={year}
+            id={`year-${year}`}
+            className={`${styles.yearWrap} ${statusClass(status)} ${introDone ? '' : 'reveal'}`}
+            style={introDone ? undefined : step(7 + Math.min(index, 3))}
+            aria-hidden={status === 'leaving' ? true : undefined}
           >
-            {o.label}
-            <span className={styles.count}>{counts[o.id]}</span>
-          </button>
-        ))}
-      </div>
-
-      {rendered.map(({ year, items, status }, index) => (
-        <div
-          key={year}
-          id={`year-${year}`}
-          className={`${styles.yearWrap} ${statusClass(status)} ${introDone ? '' : 'reveal'}`}
-          style={introDone ? undefined : step(6 + Math.min(index, 3))}
-          aria-hidden={status === 'leaving' ? true : undefined}
-        >
-          <div className={styles.yearInner}>
-        <div className={styles.year}>
-          <h3 className={styles.yearTitle}>{year}</h3>
-          <ul className={styles.grid}>
-            {items.map((w) => {
-              const thumbnail = youtubeThumbnail(w.href);
-              const body = (
-                <>
-                  {thumbnail && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      className={styles.thumb}
-                      src={thumbnail}
-                      alt=""
-                      loading="lazy"
-                      width={480}
-                      height={270}
-                    />
-                  )}
-                  <span className={styles.title}>{w.title}</span>
-                  {w.href && (
-                    <span className={styles.arrow} aria-hidden="true">↗</span>
-                  )}
-                  {w.role && <span className={styles.role}>{w.role}</span>}
-                  {(w.tags.length > 0 || w.personal) && (
-                    <span className={styles.meta}>
-                      {w.tags.map((t) => (
-                        <span key={t} className={styles.tag}>{labelOf[t]}</span>
-                      ))}
-                      {w.personal && <span className={styles.personal}>Personal</span>}
-                    </span>
-                  )}
-                  {w.href && <span className={styles.cta}>작업 보기 →</span>}
-                </>
-              );
-              return (
-                <li key={`${year}-${w.title}`}>
-                  {w.href ? (
-                    /^https?:\/\//.test(w.href) ? (
-                      <a
-                        href={w.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`${styles.card} ${styles.link}`}
-                      >
-                        {body}
-                      </a>
-                    ) : (
-                      <Link href={w.href} className={`${styles.card} ${styles.link}`}>
-                        {body}
-                      </Link>
-                    )
-                  ) : (
-                    <div className={styles.card}>{body}</div>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-          </div>
-        </div>
-      ))}
-
-      <nav className={styles.toc} aria-label="바로가기">
-        <div className={styles.tocPanel}>
-          {tocRows
-            .filter((item) => item.id !== 'contact')
-            .map((item) => (
-              <div key={item.id} className={`${styles.tocRow} ${statusClass(item.status)}`}>
-                <a
-                  href={`#${item.id}`}
-                  className={styles.tocItem}
-                  aria-current={activeId === item.id ? 'location' : undefined}
-                  tabIndex={item.status === 'leaving' ? -1 : undefined}
-                >
-                  {item.label}
-                </a>
+            <div className={styles.yearInner}>
+              <div className={styles.year}>
+                <h3 className={styles.yearTitle}>{year}</h3>
+                <ul className={styles.grid}>
+                  {items.map((w) => (
+                    <li key={`${year}-${w.title}`}>
+                      <WorkCard work={w} />
+                    </li>
+                  ))}
+                </ul>
               </div>
-            ))}
-        </div>
+            </div>
+          </div>
+        ))}
 
-        <div className={styles.tocPanel}>
+        <nav className={styles.toc} aria-label="바로가기">
+          <div className={styles.tocPanel}>
+            {tocRows
+              .filter((item) => item.id !== 'contact')
+              .map((item) => (
+                <div key={item.id} className={`${styles.tocRow} ${statusClass(item.status)}`}>
+                  <a
+                    href={`#${item.id}`}
+                    className={styles.tocItem}
+                    aria-current={activeId === item.id ? 'location' : undefined}
+                    tabIndex={item.status === 'leaving' ? -1 : undefined}
+                  >
+                    {item.label}
+                  </a>
+                </div>
+              ))}
+          </div>
+
+          <div className={styles.tocPanel}>
+            <a
+              href="#contact"
+              className={styles.tocItem}
+              aria-current={activeId === 'contact' ? 'location' : undefined}
+            >
+              Contact
+            </a>
+          </div>
+        </nav>
+      </section>
+
+      <nav
+        ref={mobileTocRef}
+        className={`${styles.mobileToc} ${mobileTocVisible ? styles.mobileTocVisible : ''}`}
+        aria-label="연도별 바로가기 (모바일)"
+        aria-hidden={mobileTocVisible ? undefined : true}
+      >
+        {tocItems.map((item) => (
           <a
-            href="#contact"
-            className={styles.tocItem}
-            aria-current={activeId === 'contact' ? 'location' : undefined}
+            key={item.id}
+            href={`#${item.id}`}
+            className={styles.mobileChip}
+            aria-current={activeId === item.id ? 'location' : undefined}
+            tabIndex={mobileTocVisible ? undefined : -1}
           >
-            Contact
+            {item.label}
           </a>
-        </div>
+        ))}
       </nav>
-    </section>
+    </>
   );
 }

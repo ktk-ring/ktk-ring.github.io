@@ -1,9 +1,9 @@
-@import url("https://cdn.jsdelivr.net/gh/wanteddev/wanted-sans@v1.0.3/packages/wanted-sans/fonts/webfonts/variable/split/WantedSansVariable.min.css");
+/* Wanted Sans는 첫 화면 렌더링을 막지 않도록 app/layout.tsx에서 <link>로 불러온다 */
 
 :root {
   --bg: #0e0e11;
   --fg: #f5f5f5;
-  --muted: #a8a8b0;
+  --muted: #b8b8c0;
   --maxw: 1440px;
   --gutter: 24px;
   --radius: 6px;
@@ -23,6 +23,12 @@
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+/* 100vw 폭의 대표작 영역이 세로 스크롤바 폭만큼 가로 스크롤을 만들지 않도록 */
+html,
+body {
+  overflow-x: clip;
 }
 
 html {
@@ -103,7 +109,7 @@ img {
 }
 
 #contact {
-  scroll-margin-top: 100px;
+  scroll-margin-top: 120px;
 }
 
 .hero {
