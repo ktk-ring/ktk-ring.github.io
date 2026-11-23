@@ -35,7 +35,9 @@ const MODULES: Module[] = [
       '프레임 단위 미리보기 · 구간 지정 · 지금 화면 PNG · 구간 GIF와 영상',
       'MP4 · MOV · MKV · WebM · GIF 일괄 변환 · 프리셋 · 오디오와 자막 트랙 선택',
       '영상 ↔ PNG · JPG · TIFF · EXR 이미지 시퀀스 · 빠진 프레임 알림',
+      '렌더 점검: 렌더 폴더의 시퀀스마다 빠진 프레임 · 빈 파일 · 깨진 파일 · 해상도가 다른 프레임 찾기',
       '최대 9개 영상을 격자나 A/B 분할로 동시에 재생하고 영상 · 이미지로 저장',
+      '색 변환: 리니어 EXR · ACEScct를 ACES 1.2 · 1.3 · 2.0 출력 변환으로 보기 · 변환 · UE5용 OCIO 설정 내보내기',
       'HDR 영상은 SDR로 바꿔 미리보기 · 변환',
     ],
     shots: [
@@ -46,6 +48,10 @@ const MODULES: Module[] = [
       [
         { src: 'media-encode', caption: '인코딩' },
         { src: 'media-image', caption: '이미지 변환' },
+      ],
+      [
+        { src: 'media-check', caption: '렌더 점검' },
+        { src: 'media-library', caption: '라이브러리' },
       ],
     ],
   },
