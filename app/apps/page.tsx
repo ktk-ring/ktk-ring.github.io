@@ -6,7 +6,7 @@ import styles from '../../styles/Home.module.css';
 
 export const metadata = pageMetadata({
   title: 'Apps & Services | 김태균',
-  description: '김태균(ktk_ring)이 직접 만든 앱과 웹 서비스. 작업 도구 Editables, 환승 열차 탐색, 워드샐러드 생성기',
+  description: '김태균(ktk_ring)이 개발한 앱과 웹 서비스. Editables, 환승 열차 탐색, 워드샐러드 생성기 등',
   path: '/apps/',
 });
 
@@ -17,8 +17,8 @@ export default function Apps() {
     <main className="container">
       <header className="hero">
         <p className="eyebrow reveal" style={step(0)}>02 · Apps &amp; Services</p>
-        <h1 className="reveal" style={step(1)}>앱과 서비스</h1>
-        <p className="role reveal" style={step(2)}>필요해서, 혹은 재미로 직접 만든 것들이에요.</p>
+        <h1 className="reveal" style={step(1)}>앱 및 서비스</h1>
+        <p className="role reveal" style={step(2)}>직접 개발한 앱과 웹 서비스</p>
       </header>
 
       {serviceGroups.map((group, gi) => (

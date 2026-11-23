@@ -45,7 +45,7 @@ export default function Home() {
             </Link>
           </h2>
           <p className={styles.doorMeta}>
-            {firstYear}~{lastYear} · 작업 {works.length}개
+            {firstYear}–{lastYear} · {works.length}개 작업
           </p>
 
           <ul className={styles.previews} aria-hidden="true">
@@ -79,11 +79,11 @@ export default function Home() {
           </p>
           <h2 id="door-apps" className={styles.doorTitle}>
             <Link href="/apps/" className={styles.doorLink}>
-              앱과 서비스
+              앱 및 서비스
             </Link>
           </h2>
           <p className={styles.doorMeta}>
-            {serviceGroups.map((g) => `${g.label} ${g.items.length}개`).join(' · ')}
+            {serviceGroups.map((g) => `${g.label} ${g.items.length}`).join(' · ')}
           </p>
 
           <ul className={styles.doorServices}>

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   keywords: ["김태균", "ktk_ring", "포트폴리오", "3D", "VFX", "테크니컬 아티스트", "모션그래픽", "미디어아트"],
   ...pageMetadata({
     title: "김태균 | KTK RING",
-    description: "3D · VFX 테크니컬 아티스트 김태균(ktk_ring)의 홈페이지. 지금까지 한 작업과 직접 만든 앱, 웹 서비스를 모아 두었어요.",
+    description: "3D · VFX · 테크니컬 아티스트 김태균(ktk_ring). 작업 포트폴리오와 직접 개발한 앱 · 웹 서비스",
     path: "/",
   }),
 };

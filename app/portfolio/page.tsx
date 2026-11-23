@@ -4,7 +4,7 @@ import { pageMetadata } from '../../data/site';
 
 export const metadata = pageMetadata({
   title: 'Portfolio | 김태균',
-  description: '김태균(ktk_ring)이 2019년부터 해 온 작업들. 모션그래픽, 3D, 디자인, 프로그래밍, 미디어아트, AI',
+  description: '김태균(ktk_ring)의 작업 포트폴리오. 모션그래픽, 3D, 디자인, 프로그래밍, 미디어아트, AI',
   path: '/portfolio/',
 });
 
@@ -27,7 +27,7 @@ const tools: { label: string; items: string[] }[] = [
     items: ['Photoshop', 'Illustrator', 'InDesign', 'After Effects', 'Premiere Pro', 'Animate', 'Figma'],
   },
   {
-    label: '개발',
+    label: '프로그래밍 및 코딩 (개발)',
     items: ['Unreal Engine', 'JavaScript', 'p5.js', 'React', 'Next.js', 'Python', 'Arduino', 'Java'],
   },
 ];

@@ -242,7 +242,7 @@ export default function WorkBrowser() {
 
         <p className={`${styles.legend} reveal`} style={step(5)}>
           <span className={styles.legendMark} aria-hidden="true">↗</span>
-          표시가 있는 작업은 눌러서 볼 수 있어요.
+          표시가 있는 작업은 클릭하면 작업을 볼 수 있습니다.
         </p>
 
         <div className={`${styles.filters} reveal`} style={step(6)} role="group" aria-label="작업 분류">
