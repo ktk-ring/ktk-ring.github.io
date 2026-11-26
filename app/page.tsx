@@ -69,7 +69,7 @@ export default function Home() {
           </ul>
 
           <span className={styles.doorCta} aria-hidden="true">
-            포트폴리오 보기 →
+            포트폴리오 보기 <span className="nudge">→</span>
           </span>
         </section>
 
@@ -104,7 +104,7 @@ export default function Home() {
           </ul>
 
           <span className={styles.doorCta} aria-hidden="true">
-            전체 보기 →
+            전체 보기 <span className="nudge">→</span>
           </span>
         </section>
       </div>

@@ -27,7 +27,9 @@ export default function SiteHeader() {
               href={s.href}
               aria-current={pathname.startsWith(s.match) ? 'page' : undefined}
             >
-              {s.label}
+              <span className="boldSafe" data-text={s.label}>
+                {s.label}
+              </span>
             </Link>
           ))}
           <a href={hasContact ? '#contact' : '/#contact'}>Contact</a>

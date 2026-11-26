@@ -48,7 +48,7 @@
   padding: 8px 16px;
   background: var(--glass);
   box-shadow: var(--glass-edge);
-  transition: color 0.25s, background-color 0.25s;
+  transition: color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
 }
 
 .nav a:hover {
@@ -75,7 +75,7 @@
 }
 
 .footerLinks a {
-  transition: color 0.2s;
+  transition: color var(--dur-fast) var(--ease-out);
 }
 
 .footerLinks a:hover {

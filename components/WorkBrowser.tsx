@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { categories, works, type CategoryId, type Work } from '../data/works';
 import styles from '../styles/WorkBrowser.module.css';
 
@@ -9,7 +10,8 @@ type Filter = CategoryId | 'all';
 const labelOf = Object.fromEntries(categories.map((c) => [c.id, c.label])) as Record<CategoryId, string>;
 const categoryIds = categories.map((c) => c.id) as string[];
 
-const ANIMATION_MS = 350;
+/** 연도 섹션이 접히는 시간 (CSS yearClose와 같게) */
+const ANIMATION_MS = 440;
 const FILTER_PARAM = 'category';
 
 const step = (i: number) => ({ '--i': i }) as React.CSSProperties;
@@ -20,6 +22,24 @@ interface RenderedYear {
   status: 'idle' | 'entering' | 'leaving';
 }
 
+const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/** 필터에 맞는 작업을 연도별로 묶는다 (최신 연도 먼저) */
+function groupsFor(filter: Filter) {
+  const visible = works.filter((w) => filter === 'all' || w.tags.includes(filter));
+  const byYear: Record<number, Work[]> = {};
+  visible.forEach((w) => {
+    (byYear[w.year] = byYear[w.year] ?? []).push(w);
+  });
+  return Object.keys(byYear)
+    .map(Number)
+    .sort((a, b) => b - a)
+    .map((year) => [year, byYear[year]] as [number, Work[]]);
+}
+
+const idle = (groups: [number, Work[]][]): RenderedYear[] =>
+  groups.map(([year, items]) => ({ year, items, status: 'idle' as const }));
+
 function youtubeThumbnail(href?: string) {
   const id = href?.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=)([\w-]{11})/)?.[1];
   return id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : undefined;
@@ -29,13 +49,29 @@ function youtubeThumbnail(href?: string) {
  * href 종류에 따라 새 탭 링크 / 같은 탭 링크 / 일반 박스로 감싼다.
  * /jiji-stop 같은 경로는 같은 도메인의 별도 저장소 사이트라 next/link가 아닌 일반 링크로 연다.
  */
-function Wrapper({ work: w, className, children }: { work: Work; className: string; children: React.ReactNode }) {
-  if (!w.href) return <div className={className}>{children}</div>;
+function Wrapper({
+  work: w,
+  className,
+  style,
+  children,
+}: {
+  work: Work;
+  className: string;
+  style?: React.CSSProperties;
+  children: React.ReactNode;
+}) {
+  if (!w.href)
+    return (
+      <div className={className} style={style}>
+        {children}
+      </div>
+    );
   const external = /^https?:\/\//.test(w.href);
   return (
     <a
       href={w.href}
       className={className}
+      style={style}
       {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
     >
       {children}
@@ -50,8 +86,10 @@ function WorkCard({ work: w }: { work: Work }) {
   const body = (
     <>
       {thumbnail && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img className={styles.thumb} src={thumbnail} alt="" loading="lazy" width={480} height={270} />
+        <span className={styles.thumbFrame}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className={styles.thumb} src={thumbnail} alt="" loading="lazy" width={480} height={270} />
+        </span>
       )}
       <span className={styles.title}>{w.title}</span>
       {w.href && (
@@ -66,12 +104,16 @@ function WorkCard({ work: w }: { work: Work }) {
           {w.personal && <span className={styles.personal}>Personal</span>}
         </span>
       )}
-      {w.href && <span className={styles.cta}>작업 보기 →</span>}
+      {w.href && (
+        <span className={styles.cta}>
+          작업 보기 <span className="nudge">→</span>
+        </span>
+      )}
     </>
   );
 
   return (
-    <Wrapper work={w} className={className}>
+    <Wrapper work={w} className={className} style={{ '--vt': `work-${works.indexOf(w)}` } as React.CSSProperties}>
       {body}
     </Wrapper>
   );
@@ -90,12 +132,54 @@ export default function WorkBrowser() {
     }
   }, []);
 
+  const sectionRef = useRef<HTMLElement>(null);
+  const revealObserver = useRef<IntersectionObserver | null>(null);
+
   const selectFilter = (id: Filter) => {
-    setFilter(id);
+    if (id === filter) return;
     const url = new URL(window.location.href);
     if (id === 'all') url.searchParams.delete(FILTER_PARAM);
     else url.searchParams.set(FILTER_PARAM, id);
     window.history.replaceState(null, '', url);
+
+    // 필터를 고르기 시작하면 스크롤 등장 효과는 그만두고 아직 숨은 카드를 모두 보이게 한다
+    revealObserver.current?.disconnect();
+    sectionRef.current?.querySelectorAll<HTMLElement>('[data-reveal="pending"]').forEach((el) => {
+      el.dataset.reveal = 'done';
+    });
+
+    // View Transitions를 지원하면 카드 하나하나가 새 자리로 옮겨 가게 하고,
+    // 아니면 연도 섹션이 접히고 열리는 기존 애니메이션을 쓴다
+    const doc = document as Document & {
+      startViewTransition?: (update: () => void) => { finished: Promise<void> };
+    };
+    const section = sectionRef.current;
+    if (!doc.startViewTransition || reducedMotion() || !section) {
+      setFilter(id);
+      return;
+    }
+    // 화면 근처에 있는 카드 · 연도 제목만 전환에 참여시킨다 (전부 캡처하면 첫 프레임이 끊긴다)
+    const markNearViewport = () => {
+      const margin = window.innerHeight * 0.25;
+      section.querySelectorAll<HTMLElement>(`.${styles.card}, .${styles.yearTitle}`).forEach((el) => {
+        const r = el.getBoundingClientRect();
+        if (r.bottom > -margin && r.top < window.innerHeight + margin) el.dataset.vt = '';
+        else delete el.dataset.vt;
+      });
+    };
+    markNearViewport();
+    section.classList.add(styles.vtActive);
+    const transition = doc.startViewTransition(() => {
+      flushSync(() => {
+        setRendered(idle(groupsFor(id)));
+        setFilter(id);
+      });
+      markNearViewport();
+    });
+    transition.finished.finally(() => {
+      section.classList.remove(styles.vtActive);
+      section.querySelectorAll<HTMLElement>('[data-vt]').forEach((el) => delete el.dataset.vt);
+    });
   };
 
   const counts = useMemo(() => {
@@ -106,36 +190,24 @@ export default function WorkBrowser() {
     return result;
   }, []);
 
-  const groups = useMemo(() => {
-    const visible = works.filter((w) => filter === 'all' || w.tags.includes(filter));
-    const byYear: Record<number, Work[]> = {};
-    visible.forEach((w) => {
-      (byYear[w.year] = byYear[w.year] ?? []).push(w);
-    });
-    return Object.keys(byYear)
-      .map(Number)
-      .sort((a, b) => b - a)
-      .map((year) => [year, byYear[year]] as [number, Work[]]);
-  }, [filter]);
+  const groups = useMemo(() => groupsFor(filter), [filter]);
 
   const options: { id: Filter; label: string }[] = [{ id: 'all', label: '전체' }, ...categories];
 
   // 필터 변경 시 연도 섹션이 사라지고 나타나는 것을 애니메이션하기 위해,
   // 사라지는 연도는 애니메이션이 끝날 때까지 이전 내용 그대로 남겨 둔다.
-  const [rendered, setRendered] = useState<RenderedYear[]>(() =>
-    groups.map(([year, items]) => ({ year, items, status: 'idle' as const })),
-  );
+  const [rendered, setRendered] = useState<RenderedYear[]>(() => idle(groups));
 
   useEffect(() => {
     // 주소에서 읽어 온 필터를 처음 적용할 때는 애니메이션 없이 바로 교체
     if (urlFilterRef.current && urlFilterRef.current === filter) {
       urlFilterRef.current = null;
-      setRendered(groups.map(([year, items]) => ({ year, items, status: 'idle' as const })));
+      setRendered(idle(groups));
       return;
     }
 
     const target = new Map<number, Work[]>(groups);
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduced = reducedMotion();
 
     setRendered((prev) => {
       const prevByYear = new Map(prev.map((r) => [r.year, r]));
@@ -191,6 +263,36 @@ export default function WorkBrowser() {
   const [mobileTocVisible, setMobileTocVisible] = useState(false);
   const mobileTocRef = useRef<HTMLElement>(null);
 
+  // 첫 화면 아래에 있는 카드는 숨겨 두었다가, 스크롤해서 보이면 같이 들어온 순서대로 떠오르게 한다.
+  // 서버에서 그린 HTML에서는 모두 보이고, 화면 밖 카드만 하이드레이션 뒤에 숨기므로 깜빡임이 없다.
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section || reducedMotion() || !('IntersectionObserver' in window)) return;
+    const below = Array.from(section.querySelectorAll<HTMLElement>(`.${styles.grid} > li`)).filter(
+      (li) => li.getBoundingClientRect().top > window.innerHeight,
+    );
+    below.forEach((li) => {
+      li.dataset.reveal = 'pending';
+    });
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top || a.boundingClientRect.left - b.boundingClientRect.left)
+          .forEach((e, i) => {
+            const el = e.target as HTMLElement;
+            el.style.setProperty('--rn', String(Math.min(i, 5)));
+            el.dataset.reveal = 'shown';
+            io.unobserve(el);
+          });
+      },
+      { rootMargin: '0px 0px -10% 0px' },
+    );
+    below.forEach((li) => io.observe(li));
+    revealObserver.current = io;
+    return () => io.disconnect();
+  }, []);
+
   // 첫 로딩 등장 효과가 끝난 뒤에는 연도 섹션에서 reveal 클래스를 제거
   const [introDone, setIntroDone] = useState(false);
   useEffect(() => {
@@ -237,7 +339,7 @@ export default function WorkBrowser() {
 
   return (
     <>
-      <section id="works" aria-labelledby="works-title">
+      <section id="works" ref={sectionRef} aria-labelledby="works-title">
         <h2 id="works-title" className={styles.srOnly}>작업물</h2>
 
         <p className={`${styles.legend} reveal`} style={step(5)}>
@@ -254,7 +356,9 @@ export default function WorkBrowser() {
               aria-pressed={filter === o.id}
               onClick={() => selectFilter(o.id)}
             >
-              {o.label}
+              <span className="boldSafe" data-text={o.label}>
+                {o.label}
+              </span>
               <span className={styles.count}>{counts[o.id]}</span>
             </button>
           ))}
@@ -270,10 +374,12 @@ export default function WorkBrowser() {
           >
             <div className={styles.yearInner}>
               <div className={styles.year}>
-                <h3 className={styles.yearTitle}>{year}</h3>
+                <h3 className={styles.yearTitle} style={{ '--vt': `year-${year}` } as React.CSSProperties}>
+                  {year}
+                </h3>
                 <ul className={styles.grid}>
-                  {items.map((w) => (
-                    <li key={`${year}-${w.title}`}>
+                  {items.map((w, i) => (
+                    <li key={`${year}-${w.title}`} style={{ '--n': Math.min(i + 1, 8) } as React.CSSProperties}>
                       <WorkCard work={w} />
                     </li>
                   ))}
@@ -295,7 +401,9 @@ export default function WorkBrowser() {
                     aria-current={activeId === item.id ? 'location' : undefined}
                     tabIndex={item.status === 'leaving' ? -1 : undefined}
                   >
-                    {item.label}
+                    <span className="boldSafe" data-text={item.label}>
+                      {item.label}
+                    </span>
                   </a>
                 </div>
               ))}
@@ -307,7 +415,9 @@ export default function WorkBrowser() {
               className={styles.tocItem}
               aria-current={activeId === 'contact' ? 'location' : undefined}
             >
-              Contact
+              <span className="boldSafe" data-text="Contact">
+                Contact
+              </span>
             </a>
           </div>
         </nav>
@@ -327,7 +437,9 @@ export default function WorkBrowser() {
             aria-current={activeId === item.id ? 'location' : undefined}
             tabIndex={mobileTocVisible ? undefined : -1}
           >
-            {item.label}
+            <span className="boldSafe" data-text={item.label}>
+              {item.label}
+            </span>
           </a>
         ))}
       </nav>

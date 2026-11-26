@@ -94,7 +94,7 @@
   box-shadow: var(--glass-edge);
   color: var(--fg);
   text-decoration: none;
-  transition: background-color 0.25s;
+  transition: background-color var(--dur-fast) var(--ease-out);
 }
 
 .page .button:hover {
@@ -155,7 +155,7 @@
   border-radius: var(--radius);
   color: var(--muted);
   text-decoration: none;
-  transition: color 0.25s, background-color 0.25s;
+  transition: color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
 }
 
 .page .toc a:hover {

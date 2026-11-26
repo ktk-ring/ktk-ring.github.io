@@ -17,6 +17,18 @@
   --glass-blur: blur(24px) saturate(170%);
   --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 0 0 1px rgba(255, 255, 255, 0.07);
   --glass-drop: 0 14px 36px rgba(0, 0, 0, 0.4);
+  --glass-drop-lift: 0 24px 48px rgba(0, 0, 0, 0.5);
+
+  /* 모션: 들어올 때는 빠르게 출발해 길게 감속, 나갈 때는 천천히 출발해 빠르게 사라진다 */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.55, 0, 1, 0.45);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-press: 120ms;
+  --dur-fast: 200ms;
+  --dur-base: 360ms;
+  --dur-slow: 640ms;
+  --dur-reveal: 1000ms;
+  --lift: -4px;
 }
 
 *,
@@ -60,22 +72,93 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* 첫 로딩 시에만 순서대로 떠오르는 등장 효과 (--i 값 × 90ms 만큼 지연) */
+/* 첫 로딩 시에만 순서대로 떠오르는 등장 효과 (--i 값 × 70ms 만큼 지연).
+   위치는 길게 감속하고, 투명도는 앞쪽 40% 안에 다 차오르게 해서 글자가 흐릿하게 오래 남지 않게 한다 */
 .reveal {
-  animation: reveal 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
-  animation-delay: calc(var(--i, 0) * 90ms);
+  animation: reveal var(--dur-reveal) var(--ease-out) backwards;
+  animation-delay: calc(var(--i, 0) * 70ms);
 }
 
 @keyframes reveal {
   from {
     opacity: 0;
-    transform: translateY(18px);
+    transform: translateY(24px);
+  }
+  40% {
+    opacity: 1;
+  }
+}
+
+/* 굵기가 바뀌어도 폭이 변하지 않게: 굵은 글자 폭을 미리 잡아 둔다 (data-text에 같은 글자) */
+.boldSafe {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.boldSafe::after {
+  content: attr(data-text);
+  content: attr(data-text) / '';
+  height: 0;
+  overflow: hidden;
+  font-weight: 600;
+  visibility: hidden;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* 링크 끝 화살표: 호버하면 가는 방향으로 살짝 밀린다 */
+.nudge {
+  display: inline-block;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+/* 포트폴리오 필터 전환 (View Transitions): 자리를 옮기는 카드는 감속하며 미끄러지고,
+   새로 생긴 카드는 이동이 어느 정도 진행된 뒤 떠오르고, 빠지는 카드는 먼저 사라진다 */
+::view-transition-group(*) {
+  animation-duration: 560ms;
+  animation-timing-function: var(--ease-in-out);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 240ms;
+}
+
+::view-transition-new(*.work):only-child {
+  animation: vt-rise var(--dur-slow) var(--ease-out) 180ms backwards;
+}
+
+::view-transition-old(*.work):only-child {
+  animation: vt-fade 200ms var(--ease-in) forwards;
+}
+
+@keyframes vt-rise {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+@keyframes vt-fade {
+  to {
+    opacity: 0;
+    transform: scale(0.97);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .reveal {
-    animation: none;
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0s !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0s !important;
   }
 }
 
@@ -232,14 +315,14 @@ img {
   display: inline-flex;
   align-items: baseline;
   gap: 8px;
-  transition: opacity 0.2s;
+  transition: opacity var(--dur-fast) var(--ease-out);
 }
 
 .contact a[target='_blank']::after {
   content: '↗';
   font-size: 0.8em;
   color: var(--muted);
-  transition: transform 0.2s, color 0.2s;
+  transition: transform var(--dur-base) var(--ease-out), color var(--dur-fast) var(--ease-out);
 }
 
 .contact a:hover::after {

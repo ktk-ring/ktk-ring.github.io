@@ -44,8 +44,10 @@ export default function Apps() {
               <li key={s.name} className={s.wide ? styles.wide : undefined}>
                 <ServiceLink service={s} className={styles.serviceCard}>
                   {s.image && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img className={styles.serviceImage} src={s.image} alt="" width={1600} height={1000} loading="lazy" />
+                    <span className={styles.serviceImage}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={s.image} alt="" width={1600} height={1000} loading="lazy" />
+                    </span>
                   )}
                   <span className={styles.serviceBody}>
                     <ServiceIcon service={s} className={styles.serviceIcon} />
@@ -55,7 +57,9 @@ export default function Apps() {
                     </span>
                     <span className={styles.servicePlatform}>{s.platform}</span>
                   </span>
-                  <span className={styles.serviceCta}>{s.internal ? '자세히 보기 →' : '열기 ↗'}</span>
+                  <span className={styles.serviceCta}>
+                    {s.internal ? '자세히 보기' : '열기'} <span className="nudge">{s.internal ? '→' : '↗'}</span>
+                  </span>
                 </ServiceLink>
               </li>
             ))}

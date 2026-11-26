@@ -43,19 +43,26 @@
   padding: 9px 18px;
   border: 0;
   background: var(--glass);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
   box-shadow: var(--glass-edge);
   color: var(--muted);
   font: inherit;
   font-size: 15px;
   cursor: pointer;
-  transition: background-color 0.25s, color 0.25s;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    transform var(--dur-press) var(--ease-out);
 }
 
-.chip:hover {
-  background: var(--glass-hover);
-  color: var(--fg);
+@media (hover: hover) {
+  .chip:hover {
+    background: var(--glass-hover);
+    color: var(--fg);
+  }
+}
+
+.chip:active {
+  transform: scale(0.96);
 }
 
 .chip[aria-pressed='true'] {
@@ -79,7 +86,7 @@
   align-items: stretch;
   gap: 8px;
   transform: translateY(-50%);
-  animation: tocFade 0.8s ease 0.9s backwards;
+  animation: tocFade var(--dur-slow) var(--ease-out) 0.8s backwards;
 }
 
 @keyframes tocFade {
@@ -107,11 +114,11 @@
 }
 
 .tocRow.entering {
-  animation: tocIn 0.3s ease;
+  animation: tocIn var(--dur-base) var(--ease-out);
 }
 
 .tocRow.leaving {
-  animation: tocOut 0.3s ease forwards;
+  animation: tocOut 240ms var(--ease-in) forwards;
   pointer-events: none;
   overflow: clip;
 }
@@ -149,7 +156,8 @@
   font-size: 13px;
   line-height: 1.4;
   color: var(--muted);
-  transition: background-color 0.2s, color 0.2s;
+  text-align: center;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
 }
 
 .tocItem:hover {
@@ -180,17 +188,27 @@
 }
 
 .yearWrap.entering {
-  animation: yearIn 0.35s ease;
+  animation: yearOpen 440ms var(--ease-in-out);
 }
 
+/* 나갈 때는 먼저 빠르게 사라지고, 빈자리가 그 뒤를 따라 접힌다 */
 .yearWrap.leaving {
-  animation: yearOut 0.35s ease forwards;
+  animation:
+    yearClose 440ms var(--ease-in-out) forwards,
+    fadeAway 200ms var(--ease-in) forwards;
   pointer-events: none;
+}
+
+/* 들어올 때는 자리가 열리는 동안 제목과 카드가 순서대로 떠오른다 */
+.yearWrap.entering .yearTitle,
+.yearWrap.entering .grid > li {
+  animation: riseIn var(--dur-slow) var(--ease-out) backwards;
+  animation-delay: calc(120ms + var(--n, 0) * 45ms);
 }
 
 /* 애니메이션 중에만 내용을 잘라서 높이 접힘을 보여 주고, 끝나면 그림자가 잘리지 않게 해제 */
 .yearWrap.entering .yearInner {
-  animation: clipDuring 0.35s;
+  animation: clipDuring 440ms;
 }
 
 .yearWrap.leaving .yearInner {
@@ -204,30 +222,56 @@
   }
 }
 
-@keyframes yearIn {
+@keyframes yearOpen {
   from {
     grid-template-rows: 0fr;
-    opacity: 0;
-    transform: translateY(12px);
   }
   to {
     grid-template-rows: 1fr;
+  }
+}
+
+@keyframes yearClose {
+  from {
+    grid-template-rows: 1fr;
+  }
+  to {
+    grid-template-rows: 0fr;
+  }
+}
+
+@keyframes fadeAway {
+  to {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+}
+
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+/* 스크롤해서 처음 보이는 카드: 같이 들어온 순서대로 떠오른다 (WorkBrowser가 data-reveal을 붙임) */
+.grid > li[data-reveal='pending'] {
+  opacity: 0;
+  transform: translateY(32px);
+}
+
+@media print {
+  .grid > li[data-reveal] {
     opacity: 1;
     transform: none;
   }
 }
 
-@keyframes yearOut {
-  from {
-    grid-template-rows: 1fr;
-    opacity: 1;
-    transform: none;
-  }
-  to {
-    grid-template-rows: 0fr;
-    opacity: 0;
-    transform: translateY(-12px);
-  }
+.grid > li[data-reveal='shown'] {
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    transform var(--dur-reveal) var(--ease-out);
+  transition-delay: calc(var(--rn, 0) * 70ms);
 }
 
 .year {
@@ -263,10 +307,11 @@
   height: 100%;
   padding: 20px 22px;
   background: var(--glass);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
   box-shadow: var(--glass-edge), var(--glass-drop);
-  transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+  transition:
+    background-color var(--dur-base) var(--ease-out),
+    transform var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
 }
 
 .link {
@@ -274,25 +319,55 @@
   padding-right: 52px;
 }
 
-.link:hover,
 .link:focus-visible {
   background: var(--glass-hover);
-  transform: translateY(-3px);
+  transform: translateY(var(--lift));
+  box-shadow: var(--glass-edge), var(--glass-drop-lift);
 }
 
-.thumb {
+@media (hover: hover) {
+  .link:hover {
+    background: var(--glass-hover);
+    transform: translateY(var(--lift));
+    box-shadow: var(--glass-edge), var(--glass-drop-lift);
+  }
+}
+
+/* 누르는 순간: 떠 있던 카드가 살짝 내려앉는다 */
+.link:active {
+  transform: scale(0.985);
+  transition-duration: var(--dur-press);
+}
+
+/* 썸네일은 테두리 안에서만 확대되도록 감싼다 */
+.thumbFrame {
   display: block;
-  width: auto;
-  max-width: none;
-  height: auto;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
+  overflow: hidden;
   margin: -20px -22px 12px;
   background: rgba(255, 255, 255, 0.04);
 }
 
-.link .thumb {
+.link .thumbFrame {
   margin-right: -52px;
+}
+
+.thumb {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  transition: transform var(--dur-slow) var(--ease-out);
+}
+
+.link:focus-visible .thumb {
+  transform: scale(1.04);
+}
+
+@media (hover: hover) {
+  .link:hover .thumb {
+    transform: scale(1.04);
+  }
 }
 
 .arrow {
@@ -309,14 +384,32 @@
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
   box-shadow: var(--glass-edge);
-  transition: background-color 0.25s, color 0.25s, transform 0.25s;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
 }
 
-.link:hover .arrow,
 .link:focus-visible .arrow {
   background: var(--fg);
   color: var(--bg);
   transform: translate(2px, -2px);
+}
+
+.link:focus-visible .cta :global(.nudge) {
+  transform: translateX(4px);
+}
+
+@media (hover: hover) {
+  .link:hover .arrow {
+    background: var(--fg);
+    color: var(--bg);
+    transform: translate(2px, -2px);
+  }
+
+  .link:hover .cta :global(.nudge) {
+    transform: translateX(4px);
+  }
 }
 
 .cta {
@@ -380,7 +473,7 @@
   opacity: 0;
   transform: translateY(-8px);
   pointer-events: none;
-  transition: opacity 0.25s, transform 0.25s;
+  transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-base) var(--ease-out);
 }
 
 .mobileToc::-webkit-scrollbar {
@@ -402,7 +495,7 @@
   color: var(--muted);
   background: var(--glass);
   box-shadow: var(--glass-edge);
-  transition: background-color 0.2s, color 0.2s;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
 }
 
 .mobileChip[aria-current='location'] {
@@ -436,14 +529,33 @@
 
 @media (prefers-reduced-motion: reduce) {
   .link:hover,
-  .link:focus-visible {
+  .link:focus-visible,
+  .link:active,
+  .link:hover .thumb,
+  .link:focus-visible .thumb,
+  .chip:active {
     transform: none;
   }
 
   .yearWrap.entering,
   .yearWrap.leaving,
   .tocRow.entering,
-  .tocRow.leaving {
+  .tocRow.leaving,
+  .yearWrap.entering .yearTitle,
+  .yearWrap.entering .grid > li {
     animation: none;
   }
 }
+
+/* 필터를 바꿀 때 (View Transitions 지원 브라우저): 남는 카드는 새 자리로 미끄러지고,
+   새 카드는 떠오르고, 빠지는 카드는 먼저 사라진다 */
+.vtActive .card[data-vt],
+.vtActive .yearTitle[data-vt] {
+  view-transition-name: var(--vt);
+  view-transition-class: work;
+}
+
+.vtActive .tocPanel:first-child {
+  view-transition-name: works-toc;
+}
+/* 전환 의사 요소(::view-transition-*) 스타일은 styles/globals.css */
